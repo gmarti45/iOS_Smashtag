@@ -21,6 +21,12 @@ class TweetTableViewCell: UITableViewCell {
     private func updateUI() {
         tweetTextLabel?.text = tweet?.text
         tweetUserLabel?.text = tweet?.user.description
+        
+        if let tweet = self.tweet{
+            tweetTextLabel?.attributedText = highlightMentions(tweet: tweet)
+        }
+        
+        
         if let profileImageURL = tweet?.user.profileImageURL {
             // MARK: Fetch data off the main queue
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -46,5 +52,23 @@ class TweetTableViewCell: UITableViewCell {
             tweetCreatedLabel?.text = nil
         }
         
+    }
+    
+    private func highlightMentions(tweet: Tweet) -> NSMutableAttributedString {
+        let text = tweet.text
+        let attributedText = NSMutableAttributedString(string: text)
+        attributedText.setMensionsColor(mensions: tweet.hashtags, color: UIColor.magenta)
+        attributedText.setMensionsColor(mensions: tweet.urls, color: UIColor.blue)
+        attributedText.setMensionsColor(mensions: tweet.userMentions, color: UIColor.green)
+        return attributedText
+    }
+    
+}
+
+private extension NSMutableAttributedString {
+    func setMensionsColor(mensions: [Mention], color: UIColor) {
+        for mension in mensions {
+            addAttribute(NSForegroundColorAttributeName, value: color, range: mension.nsrange)
+        }
     }
 }
